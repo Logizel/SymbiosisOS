@@ -61,7 +61,7 @@ Create a `.env` file in the root directory and add your database URL and necessa
 
 ```plaintext
 DATABASE_URL="postgresql://user:password@localhost:5432/symbiosisos"
-OPENAI_API_KEY="your_api_key_here"
+OPENROUTER_API_KEY="your_api_key_here"
 ```
 
 ### 4. Setup the database
