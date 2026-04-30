@@ -1,79 +1,122 @@
 # SymbiosisOS
 
-An operating system for the circular economy. SymbiosisOS is a B2B platform designed to solve the industrial waste crisis by connecting "Waste Generators" (factories producing waste) with "Material Buyers" (facilities that can use that waste as raw material).
+## Overview
+SymbiosisOS is a deterministic, logistics-driven B2B marketplace designed to operationalize the circular economy. The platform makes it financially viable for industrial factories to exchange byproducts rather than pay for landfill dumping. 
 
-Instead of paying high fees to dump materials in landfills, SymbiosisOS uses an AI-powered matching engine to find profitable and compliant exchange opportunities.
+Unlike fuzzy AI matching systems, SymbiosisOS relies on exact SQL chemical filtering, strict PostGIS geospatial mathematics, and real-time freight calculations to guarantee viable matches based on chemistry, logistics, and compliance.
 
-**Repository:** https://github.com/Logizel/SymbiosisOS
+## The Viability Gate
+A match is only successful if it passes three absolute laws of industrial waste:
+1. **Chemistry is absolute:** Exact matches on chemical type and purity thresholds.
+2. **Freight kills margins:** Geospatial queries ensure the transit distance is viable.
+3. **The Arbitrage:** Freight Cost + Processing Cost must be strictly less than the traditional Landfill Cost.
 
-## How It Works
+## Architecture & Tech Stack
+The system is built as a decoupled monolith optimized for extreme read speeds, complex spatial queries, and absolute type safety.
 
-1. **Upload:** A factory uploads a "Waste Passport" (a PDF detailing their waste stream).
-2. **Extract:** The backend parses the document using AI to extract key data like chemical composition, quantity, and disposal costs.
-3. **Match:** The system compares the waste stream against buyer requirements in the database using vector similarity and logistics calculations.
-4. **Connect:** Users view their matches, authorize agreements, and the system generates a cryptographic hash for an immutable tracking certificate.
+**Database Engine**
+* PostgreSQL
+* PostGIS (for native geographic distance calculations via `ST_DWithin`)
 
-## Tech Stack
+**Backend (REST API)**
+* Go (Golang)
+* Router: `go-chi/chi`
+* Database Driver: `jackc/pgx` (native PostGIS support)
+* Query Generator: `sqlc` (No ORM, raw SQL compiled to type-safe Go structs)
+* Auth: Stateless JWT
 
-### Frontend
+**Frontend (Enterprise Portal)**
+* React.js (Vite)
+* Package Manager: Bun
+* Styling: Tailwind CSS + Shadcn UI
+* State Management: Zustand
+* Visualization: Recharts
 
-- React.js (Vite)
-- Tailwind CSS & Shadcn UI
-- Zustand (State management)
-- Recharts (Data visualization)
+---
 
-### Backend & Database
+## Prerequisites
+Before you begin, ensure you have the following installed:
+* [Go](https://golang.org/doc/install) (1.21+)
+* [Bun](https://bun.sh/)
+* [PostgreSQL](https://www.postgresql.org/download/) with the [PostGIS extension](https://postgis.net/install/)
+* [sqlc](https://docs.sqlc.dev/en/latest/tutorials/getting-started.html) (`go install [github.com/sqlc-dev/sqlc/cmd/sqlc@latest](https://github.com/sqlc-dev/sqlc/cmd/sqlc@latest)`)
 
-- ElysiaJS (API framework)
-- PostgreSQL
-- Prisma ORM
-- pgvector (For vector-based semantic matching)
+---
 
-### Intelligence Layer
+## Local Development Setup
 
-- Document Parsing (LlamaParse / pdf-parse)
-- LLM (For structuring extracted data)
+### 1. Database Setup
+Ensure PostgreSQL is running and create the database with the PostGIS extension.
 
-### Tooling
+```sql
+CREATE DATABASE symbiosisos;
+\c symbiosisos
+CREATE EXTENSION postgis;
+```
+Execute your `schema.sql` files against this database to create the `users`, `facilities`, `waste_streams`, and `buyer_requirements` tables.
 
-- Bun (Package manager and runtime)
-
-## Local Setup
-
-Make sure you have Bun and PostgreSQL installed on your machine.
-
-### 1. Clone the repository
+### 2. Backend Setup
+Navigate to the project root and start the Go backend.
 
 ```bash
-git clone https://github.com/Logizel/SymbiosisOS
-cd SymbiosisOS
+# Initialize the backend directory
+mkdir backend && cd backend
+go mod init symbiosisos/backend
+
+# Install core Go dependencies
+go get github.com/go-chi/chi/v5
+go get github.com/jackc/pgx/v5
+go get github.com/golang-jwt/jwt/v5
+go get github.com/go-chi/cors
+
+# Generate type-safe database models from your SQL queries
+sqlc generate
+
+# Start the Go server
+go run cmd/server/main.go
 ```
 
-### 2. Install dependencies
+### 3. Frontend Setup
+Open a new terminal window from the project root to set up the React client.
 
 ```bash
-bun install
-```
+# Initialize the frontend using Bun and Vite
+bun create vite frontend --template react-ts
+cd frontend
 
-### 3. Environment setup
+# Install core frontend dependencies
+bun add zustand recharts tailwindcss postcss autoprefixer
+bun add -d @types/node
 
-Create a `.env` file in the root directory and add your database URL and necessary API keys.
-
-```plaintext
-DATABASE_URL="postgresql://user:password@localhost:5432/symbiosisos"
-OPENROUTER_API_KEY="your_api_key_here"
-```
-
-### 4. Setup the database
-
-Push the Prisma schema to your PostgreSQL database.
-
-```bash
-bunx prisma db push
-```
-
-### 5. Start the development server
-
-```bash
+# Start the development server
 bun run dev
+```
+
+---
+
+## Project Structure
+
+```text
+symbiosisos/
+├── backend/
+│   ├── cmd/
+│   │   └── server/
+│   │       └── main.go          # Application entry point
+│   ├── internal/
+│   │   ├── auth/                # JWT validation and generation
+│   │   ├── database/            # sqlc generated Go structs (Do not edit directly)
+│   │   └── handlers/            # HTTP route handlers (Business logic)
+│   ├── sql/
+│   │   ├── queries/             # Raw SQL SELECT/INSERT/UPDATE files
+│   │   └── schema/              # Raw SQL table definitions
+│   ├── sqlc.yaml                # sqlc configuration file
+│   └── go.mod                   # Go module definitions
+└── frontend/
+    ├── src/
+    │   ├── components/          # Shadcn UI and generic components
+    │   ├── features/            # Domain-specific React components (Waste Forms, Matches)
+    │   ├── store/               # Zustand state stores
+    │   └── App.tsx              # Root React component
+    ├── package.json             # Bun dependencies
+    └── vite.config.ts           # Vite configuration
 ```
