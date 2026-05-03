@@ -11,7 +11,8 @@ import (
 	"github.com/go-chi/cors"
 	_ "github.com/jackc/pgx/v5/stdlib" // The blank identifier '_' registers the pgx driver with Go's standard sql package
 
-	"symbiosisos/backend/internal/database" // The package sqlc just generated for you
+	"symbiosisos/backend/internal/database" // The package sqlc generated for you
+	"symbiosisos/backend/internal/handlers" // Your custom HTTP handlers and JSON utilities
 )
 
 func main() {
@@ -33,9 +34,11 @@ func main() {
 		log.Fatalf("Fatal error: database is unreachable: %v", err)
 	}
 
-	// 2. Initialize sqlc queries
-	// This creates an instance of the *database.Queries struct, passing in our active connection pool.
-	_ = database.New(db) // We assign to '_' for now until we build handlers, but the connection works!
+	// 2. Initialize sqlc queries AND our custom APIConfig
+	dbQueries := database.New(db)
+	apiCfg := &handlers.APIConfig{
+		DB: dbQueries,
+	}
 
 	// 3. Initialize the Chi Router
 	router := chi.NewRouter()
@@ -49,10 +52,15 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// 5. Define a basic Health Check Route
+	// 5. Define Routes
+	// Updated Health Check using our new JSON helper
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("SymbiosisOS Engine is online. Database connected successfully."))
+		handlers.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "online"})
+	})
+
+	// Mount the core API routes under a V1 namespace
+	router.Route("/api/v1", func(r chi.Router) {
+		r.Post("/users", apiCfg.HandlerCreateUser)
 	})
 
 	// 6. Start the HTTP Server
