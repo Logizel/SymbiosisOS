@@ -9,7 +9,13 @@ import (
 )
 
 type Querier interface {
+	// sql/queries/facilities.sql
+	// Instead of returning the raw binary geography data (which Go will struggle to read),
+	// we use PostGIS functions to extract the exact Lat/Lng floats back out.
+	CreateFacility(ctx context.Context, arg CreateFacilityParams) (CreateFacilityRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// sql/queries/waste.sql
+	CreateWasteStream(ctx context.Context, arg CreateWasteStreamParams) (WasteStream, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 }
 
