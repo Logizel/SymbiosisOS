@@ -60,7 +60,12 @@ func main() {
 
 	// Mount the core API routes under a V1 namespace
 	router.Route("/api/v1", func(r chi.Router) {
+		// Public Routes
 		r.Post("/users", apiCfg.HandlerCreateUser)
+		r.Post("/login", apiCfg.HandlerLogin)
+
+		// Protected Routes (Require a valid JWT in the Authorization header)
+		r.With(apiCfg.MiddlewareAuth).Get("/users/me", apiCfg.HandlerGetMe)
 	})
 
 	// 6. Start the HTTP Server
