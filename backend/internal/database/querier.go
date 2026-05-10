@@ -9,6 +9,8 @@ import (
 )
 
 type Querier interface {
+	// sql/queries/requirements.sql
+	CreateBuyerRequirement(ctx context.Context, arg CreateBuyerRequirementParams) (BuyerRequirement, error)
 	// sql/queries/facilities.sql
 	// Instead of returning the raw binary geography data (which Go will struggle to read),
 	// we use PostGIS functions to extract the exact Lat/Lng floats back out.
