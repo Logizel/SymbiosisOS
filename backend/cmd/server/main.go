@@ -68,9 +68,10 @@ func main() {
 		r.With(apiCfg.MiddlewareAuth).Get("/users/me", apiCfg.HandlerGetMe)
 		r.With(apiCfg.MiddlewareAuth).Post("/facilities", apiCfg.HandlerCreateFacility)
 		r.With(apiCfg.MiddlewareAuth).Post("/waste", apiCfg.HandlerCreateWasteStream)
+		r.With(apiCfg.MiddlewareAuth).Post("/requirements", apiCfg.HandlerCreateRequirement)
 
 		// ADD THIS LINE
-		r.With(apiCfg.MiddlewareAuth).Post("/requirements", apiCfg.HandlerCreateRequirement)
+		r.With(apiCfg.MiddlewareAuth).Get("/matches/{facility_id}", apiCfg.HandlerGetMatches)
 	})
 
 	// 6. Start the HTTP Server
