@@ -64,10 +64,13 @@ func main() {
 		r.Post("/users", apiCfg.HandlerCreateUser)
 		r.Post("/login", apiCfg.HandlerLogin)
 
-		// Protected Routes (Require a valid JWT in the Authorization header)
+		// Protected Routes (Require a valid JWT)
 		r.With(apiCfg.MiddlewareAuth).Get("/users/me", apiCfg.HandlerGetMe)
 		r.With(apiCfg.MiddlewareAuth).Post("/facilities", apiCfg.HandlerCreateFacility)
 		r.With(apiCfg.MiddlewareAuth).Post("/waste", apiCfg.HandlerCreateWasteStream)
+
+		// ADD THIS LINE
+		r.With(apiCfg.MiddlewareAuth).Post("/requirements", apiCfg.HandlerCreateRequirement)
 	})
 
 	// 6. Start the HTTP Server
