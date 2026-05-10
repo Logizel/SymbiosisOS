@@ -6,6 +6,8 @@ package database
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -19,6 +21,9 @@ type Querier interface {
 	// sql/queries/waste.sql
 	CreateWasteStream(ctx context.Context, arg CreateWasteStreamParams) (WasteStream, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
+	// sql/queries/matches.sql
+	// The Chemical Gate: Exact string match
+	GetViableMatchesForFacility(ctx context.Context, id uuid.UUID) ([]GetViableMatchesForFacilityRow, error)
 }
 
 var _ Querier = (*Queries)(nil)
