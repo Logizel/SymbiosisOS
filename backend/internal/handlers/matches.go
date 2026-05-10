@@ -65,8 +65,9 @@ func (apiCfg *APIConfig) HandlerGetMatches(w http.ResponseWriter, r *http.Reques
 		// We only want to return matches that actually save the factory money
 		if isViable {
 			finalMatches = append(finalMatches, MatchResult{
-				WasteStreamID:      match.WasteStreamID.UUID.String(),
-				BuyerRequirementID: match.BuyerRequirementID.UUID.String(),
+				// FIX: Calling .String() directly on the pure UUID
+				WasteStreamID:      match.WasteStreamID.String(),
+				BuyerRequirementID: match.BuyerRequirementID.String(),
 				BuyerName:          match.BuyerName,
 				Chemical:           match.PrimaryChemical,
 				DistanceMiles:      math.Round(distanceMiles*100) / 100, // Round to 2 decimals
