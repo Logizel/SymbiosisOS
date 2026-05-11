@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"symbiosisos/backend/internal/database"
 	"github.com/google/uuid"
+	"symbiosisos/backend/internal/database"
 )
 
 func (apiCfg *APIConfig) HandlerCreateTransaction(w http.ResponseWriter, r *http.Request) {
@@ -45,13 +45,13 @@ func (apiCfg *APIConfig) HandlerCreateTransaction(w http.ResponseWriter, r *http
 
 	// 4. Execute the Atomic CTE Query
 	transaction, err := apiCfg.DB.ExecuteMatchTransaction(r.Context(), database.ExecuteMatchTransactionParams{
-		TonnageAvailable:      params.TonnageExchanged, // The $1 parameter in our SQL
-		ID:                    wasteID,                 // The $2 parameter
-		BuyerRequirementID:    buyerID,                 // The $3 parameter
-		FreightCostEstimated:  freightStr,              // The $4 parameter
-		NetSavingsEstimated:   savingsStr,              // The $5 parameter
+		TonnageExchanged:     params.TonnageExchanged, // sqlc named $1 after the INSERT column
+		WasteStreamID:        wasteID,                 // sqlc named $2 after the INSERT column
+		BuyerRequirementID:   buyerID,                 // The $3 parameter
+		FreightCostEstimated: freightStr,              // The $4 parameter
+		NetSavingsEstimated:  savingsStr,              // The $5 parameter
 	})
-	
+
 	if err != nil {
 		// If the CTE fails (usually because of insufficient tonnage), sqlc throws a NoRows error
 		RespondWithError(w, http.StatusConflict, "Transaction failed: Insufficient tonnage available or stream no longer exists.")
