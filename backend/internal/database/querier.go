@@ -20,6 +20,9 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// sql/queries/waste.sql
 	CreateWasteStream(ctx context.Context, arg CreateWasteStreamParams) (WasteStream, error)
+	// sql/queries/transactions.sql
+	// Step B: Only if Step A succeeds, create the ledger entry
+	ExecuteMatchTransaction(ctx context.Context, arg ExecuteMatchTransactionParams) (Transaction, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// sql/queries/matches.sql
 	// The Chemical Gate: Exact string match

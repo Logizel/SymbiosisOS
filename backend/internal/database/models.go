@@ -27,6 +27,17 @@ type Facility struct {
 	CreatedAt   sql.NullTime  `json:"created_at"`
 }
 
+type Transaction struct {
+	ID                   uuid.UUID      `json:"id"`
+	WasteStreamID        uuid.UUID      `json:"waste_stream_id"`
+	BuyerRequirementID   uuid.UUID      `json:"buyer_requirement_id"`
+	TonnageExchanged     int32          `json:"tonnage_exchanged"`
+	FreightCostEstimated string         `json:"freight_cost_estimated"`
+	NetSavingsEstimated  string         `json:"net_savings_estimated"`
+	Status               sql.NullString `json:"status"`
+	CreatedAt            sql.NullTime   `json:"created_at"`
+}
+
 type User struct {
 	ID           uuid.UUID    `json:"id"`
 	Email        string       `json:"email"`

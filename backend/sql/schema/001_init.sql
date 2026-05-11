@@ -36,3 +36,14 @@ CREATE TABLE buyer_requirements (
     max_acceptable_distance_meters INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE TABLE transactions (
+    id UUID PRIMARY KEY,
+    waste_stream_id UUID NOT NULL REFERENCES waste_streams(id),
+    buyer_requirement_id UUID NOT NULL REFERENCES buyer_requirements(id),
+    tonnage_exchanged INT NOT NULL,
+    freight_cost_estimated DECIMAL(10,2) NOT NULL,
+    net_savings_estimated DECIMAL(10,2) NOT NULL,
+    status VARCHAR(50) DEFAULT 'locked',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
