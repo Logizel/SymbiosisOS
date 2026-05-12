@@ -23,10 +23,14 @@ type Querier interface {
 	// sql/queries/transactions.sql
 	// Step B: Only if Step A succeeds, create the ledger entry
 	ExecuteMatchTransaction(ctx context.Context, arg ExecuteMatchTransactionParams) (Transaction, error)
+	GetFacilitiesByUserID(ctx context.Context, userID uuid.NullUUID) ([]GetFacilitiesByUserIDRow, error)
+	GetRequirementsByFacility(ctx context.Context, facilityID uuid.NullUUID) ([]BuyerRequirement, error)
+	GetTransactionsForUser(ctx context.Context, userID uuid.NullUUID) ([]GetTransactionsForUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// sql/queries/matches.sql
 	// The Chemical Gate: Exact string match
 	GetViableMatchesForFacility(ctx context.Context, id uuid.UUID) ([]GetViableMatchesForFacilityRow, error)
+	GetWasteStreamsByFacility(ctx context.Context, facilityID uuid.NullUUID) ([]WasteStream, error)
 }
 
 var _ Querier = (*Queries)(nil)
