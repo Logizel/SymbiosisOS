@@ -58,7 +58,7 @@ func main() {
 		handlers.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "online"})
 	})
 
-// Mount the core API routes under a V1 namespace
+	// Mount the core API routes under a V1 namespace
 	router.Route("/api/v1", func(r chi.Router) {
 		// Public Routes
 		r.Post("/users", apiCfg.HandlerCreateUser)
@@ -66,13 +66,15 @@ func main() {
 
 		// Protected Routes (Require a valid JWT)
 		r.With(apiCfg.MiddlewareAuth).Get("/users/me", apiCfg.HandlerGetMe)
-		r.With(apiCfg.MiddlewareAuth).Post("/facilities", apiCfg.HandlerCreateFacility) 
-		r.With(apiCfg.MiddlewareAuth).Post("/waste", apiCfg.HandlerCreateWasteStream) 
+		r.With(apiCfg.MiddlewareAuth).Post("/facilities", apiCfg.HandlerCreateFacility)
+		r.With(apiCfg.MiddlewareAuth).Post("/waste", apiCfg.HandlerCreateWasteStream)
 		r.With(apiCfg.MiddlewareAuth).Post("/requirements", apiCfg.HandlerCreateRequirement)
 		r.With(apiCfg.MiddlewareAuth).Get("/matches/{facility_id}", apiCfg.HandlerGetMatches)
-		
-		// ADD THIS LINE
 		r.With(apiCfg.MiddlewareAuth).Post("/transactions", apiCfg.HandlerCreateTransaction)
+		r.With(apiCfg.MiddlewareAuth).Get("/facilities", apiCfg.HandlerGetFacilities)
+		r.With(apiCfg.MiddlewareAuth).Get("/waste/{facility_id}", apiCfg.HandlerGetFacilityWaste)
+		r.With(apiCfg.MiddlewareAuth).Get("/requirements/{facility_id}", apiCfg.HandlerGetFacilityRequirements)
+		r.With(apiCfg.MiddlewareAuth).Get("/transactions", apiCfg.HandlerGetTransactions)
 	})
 
 	// 6. Start the HTTP Server
