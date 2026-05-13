@@ -5,20 +5,18 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	_ "github.com/jackc/pgx/v5/stdlib" // The blank identifier '_' registers the pgx driver with Go's standard sql package
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"log"
 	"net/http"
 	"os"
 
-	"symbiosisos/backend/internal/database" // The package sqlc generated for you
-	"symbiosisos/backend/internal/handlers" // Your custom HTTP handlers and JSON utilities
+	"symbiosisos/backend/internal/database"
+	"symbiosisos/backend/internal/handlers"
 )
 
 func main() {
-	// 1. Establish the Database Connection
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		// Fallback for local development. Adjust user/password if yours are different!
 		dbURL = "postgres://postgres:postgres@localhost:5432/symbiosisos?sslmode=disable"
 	}
 
@@ -26,44 +24,35 @@ func main() {
 	if err != nil {
 		log.Fatalf("Fatal error: cannot connect to the database: %v", err)
 	}
-	defer db.Close() // Ensure the connection pool closes when the app shuts down
+	defer db.Close()
 
-	// Ping the database to ensure the connection is actually valid
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Fatal error: database is unreachable: %v", err)
 	}
 
-	// 2. Initialize sqlc queries AND our custom APIConfig
 	dbQueries := database.New(db)
 	apiCfg := &handlers.APIConfig{
 		DB: dbQueries,
 	}
 
-	// 3. Initialize the Chi Router
 	router := chi.NewRouter()
 
-	// 4. Attach Global Middleware
-	router.Use(middleware.Logger) // Logs every incoming request to the terminal
+	router.Use(middleware.Logger)
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // The default port for Vite/React
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		AllowCredentials: true,
 	}))
 
-	// 5. Define Routes
-	// Updated Health Check using our new JSON helper
 	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		handlers.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "online"})
 	})
 
-	// Mount the core API routes under a V1 namespace
 	router.Route("/api/v1", func(r chi.Router) {
-		// Public Routes
 		r.Post("/users", apiCfg.HandlerCreateUser)
 		r.Post("/login", apiCfg.HandlerLogin)
 
-		// Protected Routes (Require a valid JWT)
 		r.With(apiCfg.MiddlewareAuth).Get("/users/me", apiCfg.HandlerGetMe)
 		r.With(apiCfg.MiddlewareAuth).Post("/facilities", apiCfg.HandlerCreateFacility)
 		r.With(apiCfg.MiddlewareAuth).Post("/waste", apiCfg.HandlerCreateWasteStream)
@@ -78,7 +67,6 @@ func main() {
 		r.With(apiCfg.MiddlewareAuth).Delete("/requirements/{id}", apiCfg.HandlerDeleteRequirement)
 	})
 
-	// 6. Start the HTTP Server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

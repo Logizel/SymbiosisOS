@@ -9,9 +9,7 @@ import (
 	"symbiosisos/backend/internal/database"
 )
 
-// HandlerCreateRequirement logs a buyer's standing order to the marketplace
 func (apiCfg *APIConfig) HandlerCreateRequirement(w http.ResponseWriter, r *http.Request) {
-	// 1. Define the exact JSON structure we expect from the frontend
 	type parameters struct {
 		FacilityID                  string  `json:"facility_id"`
 		RequiredChemical            string  `json:"required_chemical"`
@@ -26,17 +24,14 @@ func (apiCfg *APIConfig) HandlerCreateRequirement(w http.ResponseWriter, r *http
 		return
 	}
 
-	// 2. Parse the Facility UUID
 	parsedFacilityID, err := uuid.Parse(params.FacilityID)
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "Invalid Facility ID")
 		return
 	}
 
-	// 3. Format Decimal for sqlc (Just like we did for the waste stream)
 	purityStr := fmt.Sprintf("%.2f", params.MinimumPurity)
 
-	// 4. Execute the database insertion
 	requirement, err := apiCfg.DB.CreateBuyerRequirement(r.Context(), database.CreateBuyerRequirementParams{
 		FacilityID: uuid.NullUUID{
 			UUID:  parsedFacilityID,

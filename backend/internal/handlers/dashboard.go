@@ -6,10 +6,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"symbiosisos/backend/internal/database" // Added the missing import!
+	"symbiosisos/backend/internal/database"
 )
 
-// HandlerGetFacilities returns all physical locations owned by the user
 func (apiCfg *APIConfig) HandlerGetFacilities(w http.ResponseWriter, r *http.Request) {
 	userIDStr := r.Context().Value(UserIDKey).(string)
 	parsedUserID, _ := uuid.Parse(userIDStr)
@@ -29,7 +28,6 @@ func (apiCfg *APIConfig) HandlerGetFacilities(w http.ResponseWriter, r *http.Req
 	RespondWithJSON(w, http.StatusOK, facilities)
 }
 
-// HandlerGetFacilityWaste returns all active waste streams for a specific facility
 func (apiCfg *APIConfig) HandlerGetFacilityWaste(w http.ResponseWriter, r *http.Request) {
 	facilityIDStr := chi.URLParam(r, "facility_id")
 	parsedFacilityID, err := uuid.Parse(facilityIDStr)
@@ -53,7 +51,6 @@ func (apiCfg *APIConfig) HandlerGetFacilityWaste(w http.ResponseWriter, r *http.
 	RespondWithJSON(w, http.StatusOK, wasteStreams)
 }
 
-// HandlerGetFacilityRequirements returns all active buy-orders for a specific facility
 func (apiCfg *APIConfig) HandlerGetFacilityRequirements(w http.ResponseWriter, r *http.Request) {
 	facilityIDStr := chi.URLParam(r, "facility_id")
 	parsedFacilityID, err := uuid.Parse(facilityIDStr)
@@ -77,7 +74,6 @@ func (apiCfg *APIConfig) HandlerGetFacilityRequirements(w http.ResponseWriter, r
 	RespondWithJSON(w, http.StatusOK, requirements)
 }
 
-// HandlerGetTransactions returns the user's ledger history
 func (apiCfg *APIConfig) HandlerGetTransactions(w http.ResponseWriter, r *http.Request) {
 	userIDStr := r.Context().Value(UserIDKey).(string)
 	parsedUserID, _ := uuid.Parse(userIDStr)

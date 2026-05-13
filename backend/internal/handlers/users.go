@@ -10,12 +10,10 @@ import (
 	"symbiosisos/backend/internal/database"
 )
 
-// APIConfig holds our database connection state
 type APIConfig struct {
 	DB *database.Queries
 }
 
-// HandlerCreateUser processes a POST request to create a new user
 func (apiCfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email       string `json:"email"`
@@ -32,7 +30,6 @@ func (apiCfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Call the sqlc generated database method
 	user, err := apiCfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		Email:        params.Email,
 		PasswordHash: params.Password,
@@ -47,7 +44,6 @@ func (apiCfg *APIConfig) HandlerCreateUser(w http.ResponseWriter, r *http.Reques
 	RespondWithJSON(w, http.StatusCreated, user)
 }
 
-// HandlerLogin verifies credentials and returns a JWT
 func (apiCfg *APIConfig) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 	type parameters struct {
 		Email    string `json:"email"`
@@ -62,20 +58,17 @@ func (apiCfg *APIConfig) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Find the user in the database by email
 	user, err := apiCfg.DB.GetUserByEmail(r.Context(), params.Email)
 	if err != nil {
 		RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password")
 		return
 	}
 
-	// 2. Check the password
 	if user.PasswordHash != params.Password {
 		RespondWithError(w, http.StatusUnauthorized, "Incorrect email or password")
 		return
 	}
 
-	// 3. Generate the JWT (Valid for 24 hours)
 	tokenSecret := "development_super_secret_key"
 	userIDStr := fmt.Sprintf("%v", user.ID)
 
@@ -85,7 +78,6 @@ func (apiCfg *APIConfig) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. Return the token to the user
 	RespondWithJSON(w, http.StatusOK, map[string]string{
 		"id":    userIDStr,
 		"email": user.Email,
@@ -93,9 +85,7 @@ func (apiCfg *APIConfig) HandlerLogin(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// HandlerGetMe returns the authenticated user's ID to prove the middleware works
 func (apiCfg *APIConfig) HandlerGetMe(w http.ResponseWriter, r *http.Request) {
-	// Extract the User ID that our middleware injected into the context
 	userID := r.Context().Value(UserIDKey).(string)
 
 	RespondWithJSON(w, http.StatusOK, map[string]string{
