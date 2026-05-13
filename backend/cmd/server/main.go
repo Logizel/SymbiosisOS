@@ -2,14 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"log"
-	"net/http"
-	"os"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	_ "github.com/jackc/pgx/v5/stdlib" // The blank identifier '_' registers the pgx driver with Go's standard sql package
+	"log"
+	"net/http"
+	"os"
 
 	"symbiosisos/backend/internal/database" // The package sqlc generated for you
 	"symbiosisos/backend/internal/handlers" // Your custom HTTP handlers and JSON utilities
@@ -75,6 +74,8 @@ func main() {
 		r.With(apiCfg.MiddlewareAuth).Get("/waste/{facility_id}", apiCfg.HandlerGetFacilityWaste)
 		r.With(apiCfg.MiddlewareAuth).Get("/requirements/{facility_id}", apiCfg.HandlerGetFacilityRequirements)
 		r.With(apiCfg.MiddlewareAuth).Get("/transactions", apiCfg.HandlerGetTransactions)
+		r.With(apiCfg.MiddlewareAuth).Delete("/waste/{id}", apiCfg.HandlerDeleteWasteStream)
+		r.With(apiCfg.MiddlewareAuth).Delete("/requirements/{id}", apiCfg.HandlerDeleteRequirement)
 	})
 
 	// 6. Start the HTTP Server

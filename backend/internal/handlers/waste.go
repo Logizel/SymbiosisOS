@@ -4,10 +4,10 @@ import (
 	"database/sql" // Added for sql.NullString
 	"encoding/json"
 	"fmt"
-	"net/http"
-
-	"symbiosisos/backend/internal/database"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"net/http"
+	"symbiosisos/backend/internal/database"
 )
 
 // HandlerCreateWasteStream logs a specific chemical byproduct to the marketplace
@@ -53,17 +53,46 @@ func (apiCfg *APIConfig) HandlerCreateWasteStream(w http.ResponseWriter, r *http
 			UUID:  parsedFacilityID,
 			Valid: true,
 		},
-		PrimaryChemical:         params.PrimaryChemical,
-		PurityPercentage:        purityStr, // Now passing it as the expected string
-		TonnageAvailable:        params.TonnageAvailable,
-		LocalLandfillFeePerTon:  feeStr,    // Now passing it as the expected string
-		LabReportUrl:            labURL,    // Now passing standard sql.NullString
+		PrimaryChemical:        params.PrimaryChemical,
+		PurityPercentage:       purityStr, // Now passing it as the expected string
+		TonnageAvailable:       params.TonnageAvailable,
+		LocalLandfillFeePerTon: feeStr, // Now passing it as the expected string
+		LabReportUrl:           labURL, // Now passing standard sql.NullString
 	})
-	
+
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Failed to create waste stream")
 		return
 	}
 
 	RespondWithJSON(w, http.StatusCreated, wasteStream)
+}
+
+func (apiCfg *APIConfig) HandlerDeleteWasteStream(w http.ResponseWriter, r *http.Request) {
+	wasteIDStr := chi.URLParam(r, "id")
+	wasteID, err := uuid.Parse(wasteIDStr)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid waste ID")
+		return
+	}
+
+	// We also parse the facility ID from the query params to ensure ownership
+	facilityIDStr := r.URL.Query().Get("facility_id")
+	facilityID, err := uuid.Parse(facilityIDStr)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Facility ID required")
+		return
+	}
+
+	err = apiCfg.DB.DeleteWasteStream(r.Context(), database.DeleteWasteStreamParams{
+		ID:         wasteID,
+		FacilityID: uuid.NullUUID{UUID: facilityID, Valid: true},
+	})
+
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to delete waste stream")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
 }
