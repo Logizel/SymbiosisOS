@@ -27,9 +27,8 @@ JOIN facilities f_generator ON ws.facility_id = f_generator.id
 JOIN buyer_requirements br ON ws.primary_chemical = br.required_chemical
 JOIN facilities f_buyer ON br.facility_id = f_buyer.id
 WHERE f_generator.id = $1
-  -- The Purity Gate: Supply must meet or exceed Demand
+  AND ws.tonnage_available > 0
   AND ws.purity_percentage >= br.minimum_purity
-  -- The Geospatial Gate: Must be within the buyer's maximum acceptable radius
   AND ST_DWithin(f_generator.coordinates, f_buyer.coordinates, br.max_acceptable_distance_meters)
 `
 
